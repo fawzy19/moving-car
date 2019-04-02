@@ -1,0 +1,163 @@
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+
+dx = 0
+
+
+def arrows(key, x, y):
+    global dx
+    if key == GLUT_KEY_LEFT:
+        dx += 0.1
+    elif key == GLUT_KEY_RIGHT:
+        dx -= 0.2
+
+    draw()
+
+
+def myInit():
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(60, 1, 1, 60)
+    gluLookAt(8, 9, 10,
+              0, 0, 0,
+              0, 1, 0)
+
+    glClearColor(0, 1, 0, 1)
+
+
+angle = 0
+x = 0
+forward = True
+ball_pos = 2
+d = True
+dz = 0
+
+
+def draw():
+    global angle
+    global x
+    global forward
+    global dx
+    global ball_pos
+    global d
+    global dz
+
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    glClear(GL_COLOR_BUFFER_BIT)
+    glRotate(-90, 0, 1, 0)
+    glBegin(GL_QUADS)
+    glColor3f(0, 1, 1)
+    glVertex(-60, 0, 0)
+    glVertex(10, 0, 0)
+    glVertex(10, 10, 0)
+    glVertex(-60, 10, 0)
+    glColor3f(0, 1, 0)
+    glVertex(-60, 0, 0)
+    glVertex(10, 0, 0)
+    glVertex(10, 4, 0)
+    glVertex(-60, 4, 0)
+    glColor3f(0.7, 0.7, 0.7)  # The Lane
+    glVertex(10, 0, -2)
+    glVertex(-60, 0, -2)
+    glVertex(-60, 0, 2.5)
+    glVertex(10, 0, 2.5)
+    glColor3f(1, 1, 1)
+    for i in range(-40, 20, 10):
+        glVertex(i, 0, 0)
+        glVertex(i, 0, 1)
+        glVertex(i+5, 0, 1)
+        glVertex(i+5, 0, 0)
+
+    glEnd()
+
+    glColor3f(0, 0, 0)    #The Wheels
+    glLoadIdentity()
+    glRotate(-90, 0, 1, 0)
+    glTranslate(x + 0.5 * 5, -0.5 * 0.25 * 5, 0.5 * 0.5 * 5 + dx)
+    glRotate(angle, 0, 0, 1)
+    glutSolidTorus(0.125, 0.5, 10, 10)
+
+    glLoadIdentity()
+    glRotate(-90, 0, 1, 0)
+    glTranslate(x + 0.5 * 5, -0.5 * 0.25 * 5, - 0.5 * 0.5 * 5 + dx)
+    glRotate(angle, 0, 0, 1)
+    glutSolidTorus(0.125, 0.5, 10, 10)
+
+    glLoadIdentity()
+    glRotate(-90, 0, 1, 0)
+    glTranslate(x - 0.5 * 5, -0.5 * 0.25 * 5, -0.5 * 0.5 * 5 + dx)
+    glRotate(angle, 0, 0, 1)
+    glutSolidTorus(0.125, 0.5, 10, 10)
+
+    glLoadIdentity()
+    glRotate(-90, 0, 1, 0)
+    glTranslate(x - 0.5 * 5, -0.5 * 0.25 * 5, 0.5 * 0.5 * 5 + dx)
+    glRotate(angle, 0, 0, 1)
+    glutSolidTorus(0.125, 0.5, 10, 10)
+
+    glLoadIdentity()    #The Car Body
+    glRotate(-90, 0, 1, 0)
+    glColor3f(1, 0, 0)  #Lower body
+    glTranslate(x, 0, dx)
+    glScale(1, 0.25, 0.5)
+    glutSolidCube(5)
+
+    glLoadIdentity()
+    glRotate(-90, 0, 1, 0)
+    glColor3f(0, 1, 1)  #Upper Body
+    glTranslate(x, 5*0.25, dx)
+    glScale(0.5, 0.25, 0.5)
+    glutSolidCube(5)
+
+    glLoadIdentity()  # The Lights
+    glRotate(-90, 0, 1, 0)
+    glColor3f(1, 1, 0)
+    glTranslate(x + 2.5, 0, 1 + dx)
+    glutSolidSphere(0.15, 100, 100)
+
+    glLoadIdentity()
+    glRotate(-90, 0, 1, 0)
+    glTranslate(x + 2.5, 0, -1 + dx)
+    glutSolidSphere(0.15, 100, 100)
+
+    glLoadIdentity()  #The Ball
+    glRotate(-90, 0, 1, 0)
+    glTranslate(dz, 0, ball_pos)
+    glutSolidSphere(0.5, 100, 100)
+
+    glutSwapBuffers()
+
+    if forward:
+        angle -= 1
+        x += 0.05
+        if x > 5:
+            forward = False
+    else:
+        angle += 1
+        x -= 0.05
+        if x < -15:
+            forward = True
+
+    if d:
+        dz -= 0.09
+        if dz < -15:
+            d = False
+            ball_pos = -ball_pos
+    else:
+        dz += 0.09
+        if dz > 7:
+            d = True
+            ball_pos = -ball_pos
+
+
+glutInit()
+glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
+glutInitWindowSize(600, 600)
+glutCreateWindow(b"Moving Car")
+myInit()
+glutDisplayFunc(draw)
+glutSpecialFunc(arrows)
+glutIdleFunc(draw)
+glutMainLoop()
